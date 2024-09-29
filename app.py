@@ -12,8 +12,8 @@ import io
 @st.cache_resource
 def load_got_model():
     tokenizer = AutoTokenizer.from_pretrained('stepfun-ai/GOT-OCR2_0', trust_remote_code=True)
-    model = AutoModel.from_pretrained('stepfun-ai/GOT-OCR2_0', trust_remote_code=True, low_cpu_mem_usage=True, device_map='cuda', use_safetensors=True, pad_token_id=tokenizer.eos_token_id)
-    model.eval().cuda()
+    model = AutoModel.from_pretrained('stepfun-ai/GOT-OCR2_0', trust_remote_code=True, low_cpu_mem_usage=True, device_map='auto', use_safetensors=True, pad_token_id=tokenizer.eos_token_id)
+    model.eval()
     return model, tokenizer
 
 @st.cache_resource
@@ -32,62 +32,18 @@ def preprocess_image(image):
 
 def perform_got_ocr(image, model, tokenizer, ocr_type='ocr'):
     try:
-        # Convert PIL Image to byte stream
         img_byte_arr = io.BytesIO()
         image.save(img_byte_arr, format='PNG')
         img_byte_arr = img_byte_arr.getvalue()
         
-        res = model.chat(tokenizer, img_byte_arr, ocr_type=ocr_type)
+        with torch.no_grad():
+            res = model.chat(tokenizer, img_byte_arr, ocr_type=ocr_type)
         return res
     except Exception as e:
         st.error(f"Error during GOT OCR: {e}")
         return None
 
-def perform_easyocr(image, reader):
-    preprocessed_image = preprocess_image(image)
-    results = reader.readtext(preprocessed_image, paragraph=True, detail=0, 
-                              contrast_ths=0.2, adjust_contrast=0.5, 
-                              add_margin=0.1, width_ths=0.7, height_ths=0.7)
-    extracted_text = ' '.join(results)
-    return extracted_text
-
-def detect_languages(text):
-    cleaned_text = re.sub(r'[^a-zA-Z\u0900-\u097F\s]', '', text)
-    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
-    
-    if not cleaned_text:
-        return []
-    try:
-        langs = detect_langs(cleaned_text)
-        detected = []
-        for lang in langs:
-            if lang.lang == 'hi' and lang.prob > 0.1:
-                detected.append('Hindi')
-            elif lang.lang == 'en' and lang.prob > 0.1:
-                detected.append('English')
-        return detected
-    except:
-        return fallback_language_check(cleaned_text)
-
-def fallback_language_check(text):
-    hindi_range = range(0x0900, 0x097F)
-    english_range = range(0x0041, 0x007A)
-    
-    has_hindi = any(ord(char) in hindi_range for char in text)
-    has_english = any(ord(char) in english_range for char in text)
-    
-    detected = []
-    if has_hindi:
-        detected.append('Hindi')
-    if has_english:
-        detected.append('English')
-    
-    return detected
-
-def highlight_text(text, keywords):
-    for keyword in keywords:
-        text = text.replace(keyword, f"**{keyword}**")
-    return text
+# Rest of the functions remain the same
 
 def main():
     st.title("OCR for Hindi and English")

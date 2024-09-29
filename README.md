@@ -3,6 +3,7 @@
 This web application allows users to upload images containing text in both Hindi and English, extract text using Optical Character Recognition (OCR), and perform keyword searches on the extracted text. It is built with Streamlit, utilizes the EasyOCR library for text recognition, and is deployed on Hugging Face Spaces.
 
 [Live Demo](https://huggingface.co/spaces/Adignite/OCR) <!-- Add your live demo link here -->
+
 [Drive with demo and Zip File](https://drive.google.com/drive/folders/1ltHyPLnd1xyn76YMsvl9t8iI0XliOQK9)
 
 ## Features

@@ -3,23 +3,12 @@ import cv2
 import numpy as np
 import easyocr
 import re
-import torch
-from transformers import AutoModel, AutoTokenizer
 from langdetect import detect_langs
 from PIL import Image
 import io
 
-@st.cache_resource
-def load_got_model():
-    tokenizer = AutoTokenizer.from_pretrained('stepfun-ai/GOT-OCR2_0', trust_remote_code=True)
-    model = AutoModel.from_pretrained('stepfun-ai/GOT-OCR2_0', trust_remote_code=True, low_cpu_mem_usage=True, device_map='auto', use_safetensors=True, pad_token_id=tokenizer.eos_token_id)
-    model.eval()
-    return model, tokenizer
-
-@st.cache_resource
 def load_easyocr_reader():
-    reader = easyocr.Reader(['hi', 'en'], gpu=False)  
-    return reader
+    return easyocr.Reader(['hi', 'en'], gpu=False)
 
 def preprocess_image(image):
     img_array = np.array(image.convert('RGB'))
@@ -30,25 +19,19 @@ def preprocess_image(image):
     dilated = cv2.dilate(thresh, kernel, iterations=1)
     return dilated
 
-def perform_got_ocr(image, model, tokenizer, ocr_type='ocr'):
-    try:
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-        
-        with torch.no_grad():
-            res = model.chat(tokenizer, img_byte_arr, ocr_type=ocr_type)
-        return res
-    except Exception as e:
-        st.error(f"Error during GOT OCR: {e}")
-        return None
+def perform_easyocr(image, reader):
+    preprocessed_image = preprocess_image(image)
+    results = reader.readtext(preprocessed_image, paragraph=True, detail=0, 
+                              contrast_ths=0.2, adjust_contrast=0.5, 
+                              add_margin=0.1, width_ths=0.7, height_ths=0.7)
+    extracted_text = ' '.join(results)
+    return extracted_text
 
-# Rest of the functions remain the same
+# ... (keep the detect_languages, fallback_language_check, and highlight_text functions as they are)
 
 def main():
     st.title("OCR for Hindi and English")
 
-    got_model, tokenizer = load_got_model()
     easyocr_reader = load_easyocr_reader()
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -58,11 +41,7 @@ def main():
 
         if st.button('Perform OCR'):
             with st.spinner('Processing...'):
-                extracted_text = perform_got_ocr(image, got_model, tokenizer)
-                
-                if not extracted_text or not any('\u0900' <= char <= '\u097F' for char in extracted_text):
-                    st.warning("Falling back to EasyOCR for Hindi text extraction.")
-                    extracted_text = perform_easyocr(image, easyocr_reader)
+                extracted_text = perform_easyocr(image, easyocr_reader)
                 
                 st.subheader("Extracted Text:")
                 st.write(extracted_text)

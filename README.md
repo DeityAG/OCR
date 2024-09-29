@@ -18,6 +18,8 @@ I have also implemented the GOT-OCR 2.0 model (stepfun-ai/GOT-OCR2_0) alongside 
 - [GOT-EasyOCR on GitHub](https://github.com/DeityAG/OCR/blob/main/got-easyocr.ipynb) <!-- Add your GitHub link here -->
 - [GOT-EasyOCR on Kaggle](https://www.kaggle.com/code/adignite/got-easyocr) <!-- Add your Kaggle link here -->
 
+The EasyOCR is used because the GOT model was not very good at extracting Hindi Texts from the images, but the EasyOCR library does a much better job.
+
 ## Setup Instructions
 
 ### 1. Clone the Repository

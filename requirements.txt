@@ -1,0 +1,9 @@
+streamlit
+opencv-python-headless
+easyocr
+torch
+transformers
+langdetect
+Pillow
+verovio
+tiktoken

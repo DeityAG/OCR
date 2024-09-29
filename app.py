@@ -62,7 +62,8 @@ def fallback_language_check(text):
 
 def highlight_text(text, keywords):
     for keyword in keywords:
-        text = text.replace(keyword, f"**{keyword}**")
+        # Highlight the keyword by wrapping it with a span tag
+        text = re.sub(f'({re.escape(keyword)})', r'<span style="background-color: yellow;">\1</span>', text, flags=re.IGNORECASE)
     return text
 
 def main():
@@ -98,8 +99,7 @@ def main():
             if search_query:
                 keywords = search_query.split()
                 highlighted_text = highlight_text(st.session_state.extracted_text, keywords)
-                st.markdown(highlighted_text)
+                st.markdown(highlighted_text, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
-

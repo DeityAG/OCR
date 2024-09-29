@@ -1,9 +1,8 @@
-streamlit
-opencv-python-headless
-easyocr
-torch
-transformers
-langdetect
-Pillow
-verovio
-tiktoken
+streamlit==1.22.0
+opencv-python-headless==4.7.0.72
+easyocr==1.6.2
+torch==1.13.1
+transformers==4.28.1
+langdetect==1.0.9
+Pillow==9.5.0
+numpy==1.24.3

@@ -69,6 +69,7 @@ def main():
     st.title("OCR for Hindi and English")
 
     easyocr_reader = load_easyocr_reader()
+    extracted_text = ""  # Initialize extracted_text to avoid UnboundLocalError
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
@@ -88,12 +89,13 @@ def main():
                 else:
                     st.write("No languages detected.")
 
-        st.subheader("Search in Extracted Text")
-        search_query = st.text_input("Enter keywords to search:")
-        if search_query:
-            keywords = search_query.split()
-            highlighted_text = highlight_text(extracted_text, keywords)
-            st.markdown(highlighted_text)
+        if extracted_text:  # Check if OCR has been performed
+            st.subheader("Search in Extracted Text")
+            search_query = st.text_input("Enter keywords to search:")
+            if search_query:
+                keywords = search_query.split()
+                highlighted_text = highlight_text(extracted_text, keywords)
+                st.markdown(highlighted_text)
 
 if __name__ == "__main__":
     main()

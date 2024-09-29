@@ -69,7 +69,10 @@ def main():
     st.title("OCR for Hindi and English")
 
     easyocr_reader = load_easyocr_reader()
-    extracted_text = ""  # Initialize extracted_text to avoid UnboundLocalError
+
+    # Initialize session state variables
+    if 'extracted_text' not in st.session_state:
+        st.session_state.extracted_text = ""
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
@@ -78,24 +81,25 @@ def main():
 
         if st.button('Perform OCR'):
             with st.spinner('Processing...'):
-                extracted_text = perform_easyocr(image, easyocr_reader)
+                st.session_state.extracted_text = perform_easyocr(image, easyocr_reader)
                 
                 st.subheader("Extracted Text:")
-                st.write(extracted_text)
+                st.write(st.session_state.extracted_text)
                 
-                languages_detected = detect_languages(extracted_text)
+                languages_detected = detect_languages(st.session_state.extracted_text)
                 if languages_detected:
                     st.write("Detected languages:", ', '.join(languages_detected))
                 else:
                     st.write("No languages detected.")
 
-        if extracted_text:  # Check if OCR has been performed
+        if st.session_state.extracted_text:  # Check if OCR has been performed
             st.subheader("Search in Extracted Text")
-            search_query = st.text_input("Enter keywords to search:")
+            search_query = st.text_input("Enter keywords to search:", "")
             if search_query:
                 keywords = search_query.split()
-                highlighted_text = highlight_text(extracted_text, keywords)
+                highlighted_text = highlight_text(st.session_state.extracted_text, keywords)
                 st.markdown(highlighted_text)
 
 if __name__ == "__main__":
     main()
+

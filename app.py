@@ -27,7 +27,43 @@ def perform_easyocr(image, reader):
     extracted_text = ' '.join(results)
     return extracted_text
 
-# ... (keep the detect_languages, fallback_language_check, and highlight_text functions as they are)
+def detect_languages(text):
+    cleaned_text = re.sub(r'[^a-zA-Z\u0900-\u097F\s]', '', text)
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+    
+    if not cleaned_text:
+        return []
+    try:
+        langs = detect_langs(cleaned_text)
+        detected = []
+        for lang in langs:
+            if lang.lang == 'hi' and lang.prob > 0.1:
+                detected.append('Hindi')
+            elif lang.lang == 'en' and lang.prob > 0.1:
+                detected.append('English')
+        return detected
+    except:
+        return fallback_language_check(cleaned_text)
+
+def fallback_language_check(text):
+    hindi_range = range(0x0900, 0x097F)
+    english_range = range(0x0041, 0x007A)
+    
+    has_hindi = any(ord(char) in hindi_range for char in text)
+    has_english = any(ord(char) in english_range for char in text)
+    
+    detected = []
+    if has_hindi:
+        detected.append('Hindi')
+    if has_english:
+        detected.append('English')
+    
+    return detected
+
+def highlight_text(text, keywords):
+    for keyword in keywords:
+        text = text.replace(keyword, f"**{keyword}**")
+    return text
 
 def main():
     st.title("OCR for Hindi and English")
